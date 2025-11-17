@@ -3,6 +3,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.tienda.tcg.model.Producto;
 
-public interface ProductRepository extends JpaRepository<Producto, Long> {
+public interface ProductoRepository extends JpaRepository<Producto, Long> {
     
 }
+

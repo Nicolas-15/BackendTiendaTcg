@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/productos")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*") // Permite llamadas desde Postman y front-end
 public class ProductoController {
 
     private final ProductoService service;
@@ -17,20 +17,16 @@ public class ProductoController {
         this.service = service;
     }
 
-    // GET -> listar todos
     @GetMapping
     public List<Producto> listarProductos() {
         return service.listaProductos();
     }
 
-
-    // POST -> crear producto
     @PostMapping
     public Producto guardar(@RequestBody Producto p) {
         return service.guardar(p);
     }
 
-    // DELETE -> eliminar por id
     @DeleteMapping("/{id}")
     public void eliminar(@PathVariable Long id) {
         service.eliminar(id);
