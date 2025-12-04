@@ -1,0 +1,12 @@
+package com.tienda.tcg.repository;
+
+import com.tienda.tcg.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface UserRepository extends JpaRepository<User, Long> {
+
+    // Devuelve Optional para evitar NullPointerException
+    Optional<User> findByUsername(String username);
+}
