@@ -6,11 +6,12 @@ import com.tienda.tcg.service.ProductoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/productos")   // 🔥 AHORA SÍ RUTA CORRECTA
+@RequestMapping("/productos")
 @CrossOrigin(origins = "*")
 @Tag(name = "Productos", description = "CRUD de productos de la tienda TCG")
 public class ProductoController {
@@ -26,8 +27,9 @@ public class ProductoController {
     // ============================
     @GetMapping
     @Operation(summary = "Listar productos", description = "Obtiene todos los productos disponibles")
-    public List<Producto> listarProductos() {
-        return service.listaProductos();
+    public ResponseEntity<List<Producto>> listarProductos() {
+        List<Producto> productos = service.listaProductos();
+        return ResponseEntity.ok(productos);
     }
 
     // ============================
@@ -35,8 +37,13 @@ public class ProductoController {
     // ============================
     @GetMapping("/{id}")
     @Operation(summary = "Obtener producto por ID", description = "Busca un producto por su ID")
-    public Producto obtenerPorId(@PathVariable Long id) {
-        return service.obtenerPorId(id);
+    public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
+        try {
+            Producto producto = service.obtenerPorId(id);
+            return ResponseEntity.ok(producto);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
     }
 
     // ============================
@@ -44,8 +51,13 @@ public class ProductoController {
     // ============================
     @PostMapping
     @Operation(summary = "Guardar producto", description = "Crea un nuevo producto")
-    public Producto guardar(@RequestBody Producto p) {
-        return service.guardar(p);
+    public ResponseEntity<?> guardar(@RequestBody Producto p) {
+        try {
+            Producto creado = service.guardar(p);
+            return ResponseEntity.ok(creado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     // ============================
@@ -53,8 +65,13 @@ public class ProductoController {
     // ============================
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar producto", description = "Actualiza un producto según su ID")
-    public Producto actualizar(@PathVariable Long id, @RequestBody Producto p) {
-        return service.actualizar(id, p);
+    public ResponseEntity<?> actualizar(@PathVariable Long id, @RequestBody Producto p) {
+        try {
+            Producto actualizado = service.actualizar(id, p);
+            return ResponseEntity.ok(actualizado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
     }
 
     // ============================
@@ -62,7 +79,12 @@ public class ProductoController {
     // ============================
     @DeleteMapping("/{id}")
     @Operation(summary = "Eliminar producto", description = "Elimina un producto por ID")
-    public void eliminar(@PathVariable Long id) {
-        service.eliminar(id);
+    public ResponseEntity<?> eliminar(@PathVariable Long id) {
+        try {
+            service.eliminar(id);
+            return ResponseEntity.ok("Producto eliminado correctamente");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
     }
 }
