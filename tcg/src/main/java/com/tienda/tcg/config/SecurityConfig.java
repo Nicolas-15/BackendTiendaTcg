@@ -29,7 +29,7 @@ public class SecurityConfig {
     }
 
     // ========================================
-    // 🔵 PASSWORD ENCODER
+    // PASSWORD ENCODER
     // ========================================
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -37,26 +37,25 @@ public class SecurityConfig {
     }
 
     // ========================================
-    // 🔵 CORS CONFIG
+    // CORS CONFIG
     // ========================================
-   @Bean
-public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration config = new CorsConfiguration();
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
 
-    config.setAllowedOriginPatterns(List.of("*"));  // PERMITIR TODO
-    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-    config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
-    config.setExposedHeaders(List.of("Authorization"));
-    config.setAllowCredentials(true);
+        config.setAllowedOriginPatterns(List.of("*"));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        config.setExposedHeaders(List.of("Authorization"));
+        config.setAllowCredentials(true);
 
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", config);
-
-    return source;
-}
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
 
     // ========================================
-    // 🔵 SECURITY FILTER CHAIN
+    // SECURITY FILTER CHAIN
     // ========================================
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -66,32 +65,39 @@ public CorsConfigurationSource corsConfigurationSource() {
 
         http.authorizeHttpRequests(auth -> auth
 
-                // 🌍 Rutas públicas
+                // 🔓 Rutas públicas
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
-                // 🟦 Productos visibles sin login (LISTA + DETALLE)
+                // 🔓 USUARIOS (sin token)
+                .requestMatchers(HttpMethod.GET, "/usuarios").permitAll()
+                .requestMatchers(HttpMethod.GET, "/usuarios/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/usuarios").permitAll()
+                .requestMatchers(HttpMethod.DELETE, "/usuarios/**").permitAll()
+
+                // 🔓 Productos GET públicos
                 .requestMatchers(HttpMethod.GET, "/productos").permitAll()
                 .requestMatchers(HttpMethod.GET, "/productos/**").permitAll()
 
-                // 🔐 Solo ADMIN puede CRUD
+                // 🔐 CRUD productos (solo admin)
                 .requestMatchers(HttpMethod.POST, "/productos/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/productos/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/productos/**").hasRole("ADMIN")
 
-                // 🔐 Cualquier otra ruta requiere token
+                // 🔐 Todo lo demás requiere token
                 .anyRequest().authenticated()
         );
 
         http.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
+        // ⛔ Muy importante: el filtro SOLO se ejecuta DESPUÉS de permitir rutas públicas
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
     // ========================================
-    // 🔵 AUTH MANAGER
+    // AUTH MANAGER
     // ========================================
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {

@@ -1,10 +1,11 @@
 package com.tienda.tcg.service;
 
-
 import com.tienda.tcg.model.User;
 import com.tienda.tcg.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class UserService {
@@ -18,24 +19,53 @@ public class UserService {
     }
 
     // ===================================================
-    // 🔵 GUARDAR USUARIO (REGISTRO)
+    // 🔵 LISTAR TODOS LOS USUARIOS
     // ===================================================
-    public void save(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword())); // encriptar contraseña
-        userRepository.save(user);
+    public List<User> listar() {
+        return userRepository.findAll();
     }
 
     // ===================================================
-    // 🔵 BUSCAR POR USERNAME
+    // 🔵 BUSCAR POR ID
+    // ===================================================
+    public User buscarPorId(Long id) {
+        return userRepository.findById(id).orElse(null);
+    }
+
+    // ===================================================
+    // 🔵 GUARDAR / CREAR USUARIO (POST /usuarios)
+    // ===================================================
+    public User guardar(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        return userRepository.save(user);
+    }
+
+    // ===================================================
+    // 🔵 MÉTODO COMPATIBLE CON CONTROLADORES ANTIGUOS
+    //     (Ejemplo: /auth/register)
+    // ===================================================
+    public void save(User user) {
+        guardar(user);
+    }
+
+    // ===================================================
+    // 🔵 LOGIN: Buscar usuario por username
     // ===================================================
     public User findByUsername(String username) {
         return userRepository.findByUsername(username).orElse(null);
     }
 
     // ===================================================
-    // 🔵 VALIDAR CONTRASEÑA
+    // 🔵 VALIDAR CONTRASEÑA (LOGIN)
     // ===================================================
     public boolean validarPassword(String rawPassword, String encryptedPassword) {
         return passwordEncoder.matches(rawPassword, encryptedPassword);
+    }
+
+    // ===================================================
+    // 🔵 ELIMINAR USUARIO
+    // ===================================================
+    public void eliminar(Long id) {
+        userRepository.deleteById(id);
     }
 }

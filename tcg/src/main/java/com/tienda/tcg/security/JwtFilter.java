@@ -22,11 +22,16 @@ public class JwtFilter extends OncePerRequestFilter {
         this.jwtUtil = jwtUtil;
     }
 
-    // ⛔ No filtrar los endpoints públicos (login, register, etc.)
+    // ⛔ IMPORTANTÍSIMO:
+    // No filtrar rutas públicas como /usuarios o productos GET
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return path.startsWith("/auth");  // Todos los /auth/** quedan libres
+
+        // Rutas públicas
+        return path.startsWith("/auth")
+                || path.startsWith("/usuarios")
+                || path.startsWith("/productos");  // GET públicos
     }
 
     @Override
@@ -44,9 +49,8 @@ public class JwtFilter extends OncePerRequestFilter {
             if (jwtUtil.validateToken(token)) {
 
                 String username = jwtUtil.extractUsername(token);
-                String role = jwtUtil.extractRole(token);   // ADMIN, USER, etc.
+                String role = jwtUtil.extractRole(token);
 
-                // ⭐ Convertimos el rol del token en ROLE_ADMIN o ROLE_USER
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
                                 username,
